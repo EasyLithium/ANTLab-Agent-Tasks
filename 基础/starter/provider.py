@@ -7,16 +7,20 @@ def call_model(messages, config, mock=False):
                 'response':{'choices':[{'message':{'content':'{"answer":"MOCK_NOT_EVIDENCE","citations":[]}'}}]},
                 'usage':None,'http_status':None}
     endpoint=config['endpoint']
-    if urlparse(endpoint).scheme != 'https':
-        raise ValueError('自费API endpoint必须为https；此骨架不自动调用本地模型')
+    scheme=urlparse(endpoint).scheme
+    if scheme not in ('https','http'):
+        raise ValueError('endpoint必须为http或https')
+    # 本地 llama.cpp 通常无需密钥；若设置 ASSESSMENT_API_KEY 则附加 Bearer，否则不发送 Authorization。
     key=os.environ.get('ASSESSMENT_API_KEY','')
-    if not key: raise ValueError('缺少环境变量ASSESSMENT_API_KEY；不要写入配置文件')
     params=config.get('parameters',{})
     if not isinstance(params,dict) or set(params)&{'messages','model','stream'}:
         raise ValueError('parameters不可覆盖messages/model/stream')
     body={'model':config['model'],'messages':messages,'stream':False,**params}
+    headers={'Content-Type':'application/json'}
+    if key:
+        headers['Authorization']='Bearer '+key
     req=urllib.request.Request(endpoint, data=json.dumps(body,ensure_ascii=False).encode(),
-                               headers={'Content-Type':'application/json','Authorization':'Bearer '+key})
+                               headers=headers)
     start=time.perf_counter()
     try:
         with urllib.request.urlopen(req, timeout=float(config.get('timeout_seconds',90))) as response:
