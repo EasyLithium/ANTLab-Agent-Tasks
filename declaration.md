@@ -1,6 +1,6 @@
 # AI、贡献与真实性声明
 
-**真实 API 模型名称**：Qwen3-1.7B-Q8_0（本地 llama.cpp 部署，`localhost:8000`，OpenAI 兼容接口；未使用外部商业 API）。
+**真实 API 模型名称**：Qwen2.5-7B-Instruct-Q4_K_M（本地 llama.cpp 部署，`localhost:8000`，GPU 推理；未使用外部商业 API）。曾用 Qwen3-1.7B-Q8_0 做初探与位置效应对照。
 
 **Token 消耗量级**：<10 万（40 次主请求约 7 万 token：prompt 约 6.9 万 + completion 约 1 千；精确 usage 见各 `runs/*.json` 的 `usage` 字段）。
 
