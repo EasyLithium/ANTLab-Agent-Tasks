@@ -8,7 +8,7 @@
 
 - **所选方向**：Agent
 - **最终分支**：`main`
-- **最终 commit SHA**：`f4d697ea029191528369e598e4338f1516759be4`（填写姓名编号后的内容提交；最终收尾提交见 git log 最新一条）
+- **最终 commit SHA**：`27600b088c6c35f4e62e4f6e2afe223ddb412d00`（内容定稿；仓库公开，最新提交以 git log 为准）
 - **报告**：[report.md](report.md)　**决策**：[decisions.md](decisions.md)　**声明**：[declaration.md](declaration.md)
 
 ### 启动与复算命令（在 `基础/` 目录下）
