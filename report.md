@@ -1,6 +1,6 @@
 # 文档阅读与信息核验考核 — 整合报告
 
-> 方向：Agent　编号/姓名：25012100063 刘家瑄　模型：Qwen2.5-7B-Instruct-Q4_K_M（本地 llama.cpp，GPU）
+> 方向：Agent　姓名：刘家瑄　模型：Qwen2.5-7B-Instruct-Q4_K_M（本地 llama.cpp，GPU）
 > 数据版本：basic-context-v1.2　case_sha256：`c37cda40ada89a18630dd7be098672f7e942e6f57e6199fe1aa2d6046e2b4961`
 
 ## 1. 完成概览
