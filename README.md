@@ -4,6 +4,34 @@
 
 **截止时间：北京时间 2026 年 10 月 16 日 23:59（UTC+8）。**
 
+## 本次提交（Agent 方向）
+
+- **所选方向**：Agent
+- **最终分支**：`main`
+- **最终 commit SHA**：`待填`
+- **报告**：[report.md](report.md)　**决策**：[decisions.md](decisions.md)　**声明**：[declaration.md](declaration.md)
+
+### 启动与复算命令（在 `基础/` 目录下）
+
+```powershell
+# 32 次基线（本地模型，无费用；真实调用，会消耗本地算力）
+python starter/runner.py --split evaluation --condition all --limit 32 --paid --config config.local.json
+# 8 次改进
+python starter/runner.py --split evaluation --condition R0 --variant improved --limit 8 --paid --config config.local.json
+# 生成逐例表 results/results.csv
+python results/scoring/score.py
+```
+
+### 完成 / 未完成
+
+| 内容 | 状态 |
+|---|---|
+| 基础题 40 次主请求（32 基线 + 8 改进） | ✅ 完成，全 ok |
+| 基础题逐例判分 + `results/results.csv` | ✅ 完成 |
+| 基础题诊断（位置效应）+ 变体（ID 重映射） | ✅ 完成 |
+| 三项决定 + AI 声明 + 复现说明 | ✅ 完成 |
+| 进阶题 A/B/C | ❌ 未完成 |
+
 ## 从哪开始
 
 1. 先读 [开始阅读.md](开始阅读.md)（总体规则、时间、提交方式）。

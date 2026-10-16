@@ -1,0 +1,20 @@
+﻿{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "基础题: 检查输入(dry-run)", "type": "shell", "command": "python",
+      "args": ["starter/runner.py", "--case", "D01", "--condition", "E", "--dry-run", "--config", "config.local.json"],
+      "options": { "cwd": "${workspaceFolder}/基础" }, "problemMatcher": [] },
+    { "label": "基础题: 真实调用(本地模型)", "type": "shell", "command": "python",
+      "args": ["starter/runner.py", "--case", "D01", "--condition", "E", "--paid", "--config", "config.local.json"],
+      "options": { "cwd": "${workspaceFolder}/基础" }, "problemMatcher": [] },
+    { "label": "基础题: 跑32次基线", "type": "shell", "command": "python",
+      "args": ["starter/runner.py", "--split", "evaluation", "--condition", "all", "--limit", "32", "--paid", "--config", "config.local.json"],
+      "options": { "cwd": "${workspaceFolder}/基础" }, "problemMatcher": [] },
+    { "label": "基础题: 跑8次改进", "type": "shell", "command": "python",
+      "args": ["starter/runner.py", "--split", "evaluation", "--condition", "R0", "--variant", "improved", "--limit", "8", "--paid", "--config", "config.local.json"],
+      "options": { "cwd": "${workspaceFolder}/基础" }, "problemMatcher": [] },
+    { "label": "基础题: 导出结果索引", "type": "shell", "command": "python",
+      "args": ["starter/export_runs.py"],
+      "options": { "cwd": "${workspaceFolder}/基础" }, "problemMatcher": [] }
+  ]
+}
