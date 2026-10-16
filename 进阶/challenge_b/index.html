@@ -1,11 +1,61 @@
 <!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>系统失效诊断 · 离线样机</title>
-<style>body{max-width:960px;margin:32px auto;font:16px system-ui;padding:0 16px}button,select{padding:8px;margin:6px}pre{white-space:pre-wrap;background:#f2f5f8;padding:18px}small{color:#555}</style>
-<h1>系统失效诊断</h1><p>合成材料与固定响应离线重放；没有模型API调用。</p>
+<style>
+body{max-width:960px;margin:32px auto;font:16px system-ui;padding:0 16px}
+button,select{padding:8px;margin:6px}
+section{margin:14px 0;padding:12px 16px;background:#f2f5f8;border-radius:6px}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:14px;margin-left:8px}
+.ok{background:#d8f2dc;color:#146b2e}.bad{background:#fcdcdc;color:#a02323}.warn{background:#fdf0d0;color:#8a6100}
+h2{font-size:17px;margin:0 0 8px}
+pre{white-space:pre-wrap;background:#fff;padding:10px;margin:0;font:14px ui-monospace,Consolas,monospace}
+small{color:#555}
+</style>
+<h1>系统失效诊断 · 离线样机</h1>
+<p>合成材料与固定响应离线重放；没有模型 API 调用。服务端默认加载修复版引擎时，用
+<code>python server.py --engine fixed_engine:FixedEngine</code> 启动。</p>
 <select id="cases"></select><label><input type="checkbox" id="reset">运行前清空状态</label><button id="run">运行所选案例</button>
-<p><small>观察请求顺序如何影响输出。R01→R02请保持状态；其他独立案例可勾选清空。候选人需完善差异、来源与验证状态展示。</small></p>
-<pre id="out">等待执行</pre>
+<p><small>观察请求顺序如何影响输出：R01→R02 保持状态可复现缓存污染（基线）或验证修复（修复引擎）。</small></p>
+
+<section><h2>当前请求</h2><div id="req"></div></section>
+<section><h2>来源快照与实际证据</h2><div id="ev"></div></section>
+<section><h2>验证状态（已核验 / 尚未核验）</h2><div id="st"></div></section>
+<section><h2>原始 JSON</h2><pre id="raw">等待执行</pre></section>
+
 <script>
-const el=document.getElementById('cases'),out=document.getElementById('out');
-fetch('/api/cases').then(r=>r.json()).then(d=>d.cases.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.id+' · '+c.request.doc_ids.join(',')+' / '+c.request.snapshot+' · '+c.request.query;el.append(o)})).catch(e=>out.textContent=String(e));
-document.getElementById('run').onclick=async()=>{try{const r=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({case_id:el.value,reset:document.getElementById('reset').checked})});out.textContent=JSON.stringify(await r.json(),null,2)}catch(e){out.textContent=String(e)}};
+const req=document.getElementById('req'),ev=document.getElementById('ev'),
+      st=document.getElementById('st'),raw=document.getElementById('raw');
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+fetch('/api/cases').then(r=>r.json()).then(d=>d.cases.forEach(c=>{
+  const o=document.createElement('option');
+  o.value=c.id;o.textContent=c.id+' · '+c.request.doc_ids.join(',')+' / '+c.request.snapshot+' · '+c.request.query;
+  document.getElementById('cases').append(o)})).catch(e=>raw.textContent=String(e));
+
+document.getElementById('run').onclick=async()=>{
+  try{
+    const r=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({case_id:document.getElementById('cases').value,reset:document.getElementById('reset').checked})});
+    const o=await r.json();
+    // 当前请求
+    const q=o.request||{};
+    req.innerHTML='<pre>query: '+esc(q.query)+'\ndoc_ids: '+esc(JSON.stringify(q.doc_ids))+
+      '\nsnapshot: '+esc(q.snapshot)+'\nk: '+esc(q.k)+
+      '\nrequest_id: '+esc(o.request_id)+'\ncache_hit: '+esc(o.cache_hit)+
+      '\nelapsed_ms: '+esc(Math.round(o.elapsed_ms*100)/100)+'（offline_replay）</pre>';
+    // 证据与快照
+    const rows=(o.evidence||[]).map(b=>'<li><b>'+esc(b.id)+'</b> — 文档 '+esc(b.doc_id)+
+      ' · 快照 '+esc(b.snapshot)+' · 第'+esc(b.page)+'页<br><small>'+esc(b.text)+'</small></li>').join('');
+    ev.innerHTML=(rows?'<ul>'+rows+'</ul>':'<p>（无范围内证据）</p>');
+    // 验证状态：引用定位 vs 语义支持，分别标注
+    const loc=o.locator_status==='valid'?'<span class="badge ok">引用可定位（valid）</span>':
+              '<span class="badge bad">引用不可定位（invalid）</span>';
+    const sup=o.support_status==='supported'?'<span class="badge ok">语义已核验（supported）</span>':
+               o.support_status==='not_checked'?'<span class="badge warn">语义尚未核验（not_checked）</span>':
+               '<span class="badge bad">'+esc(o.support_status)+'</span>';
+    const scope=o.status==='invalid_scope'?'<span class="badge bad">范围无效（invalid_scope）</span>':
+                '<span class="badge ok">范围正常（ok）</span>';
+    st.innerHTML='<p>引用定位：'+loc+'</p><p>语义支持：'+sup+'</p><p>范围：'+scope+
+      '</p><p><small>judgment_source: '+esc(o.judgment_source)+
+      '；语义支持需独立验证，样机未实现故标 not_checked（规格4）。</small></p>';
+    raw.textContent=JSON.stringify(o,null,2);
+  }catch(e){raw.textContent=String(e)}
+};
 </script></html>
