@@ -56,10 +56,23 @@ def main():
     check("R03 范围过滤不丢证据", ev_ids(results['R03']) == ['b03'],
           f"evidence={ev_ids(results['R03'])}")
 
-    # 3. 语义状态诚实化：R04 不再凭 ID 标 supported
-    check("R04 未做语义验证标 not_checked",
-          results['R04']['support_status'] == 'not_checked',
+    # 3. 语义判据（规则版）：矛盾识别、数字匹配、无证据、无法判定
+    check("R04 矛盾断言被识别为 contradicted",
+          results['R04']['support_status'] == 'contradicted',
           f"support={results['R04']['support_status']}")
+    check("R01 数字匹配判为 supported",
+          results['R01']['support_status'] == 'supported'
+          and results['R01']['support_basis'] == 'number_match',
+          f"support={results['R01']['support_status']}/{results['R01'].get('support_basis')}")
+    check("R02 数字匹配判为 supported",
+          results['R02']['support_status'] == 'supported',
+          f"support={results['R02']['support_status']}")
+    check("R07 无证据判为 insufficient",
+          results['R07']['support_status'] == 'insufficient',
+          f"support={results['R07']['support_status']}")
+    check("R05 规则无法判定时如实 not_checked",
+          results['R05']['support_status'] == 'not_checked',
+          f"support={results['R05']['support_status']}")
 
     # 4. 未知组合 invalid_scope
     check("R07 未知组合返回 invalid_scope",
